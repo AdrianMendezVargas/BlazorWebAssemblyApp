@@ -1,0 +1,19 @@
+﻿@page "/indice-personas"
+@inject HttpClient Http
+
+<h3>Index</h3>
+
+@code {
+    public Persona[] personas { get; set; }
+
+    protected override async Task OnInitializedAsync() {
+
+        await CargarPersonas();
+    }
+
+    async Task CargarPersonas() {
+
+        personas = await Http.GetJsonAsync<Persona[]>("personas");
+    }
+
+}

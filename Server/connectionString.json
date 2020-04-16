@@ -1,0 +1,5 @@
+﻿{
+  "ConnectionString": {
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=BlazorWebAssemblyAppDb;Trusted_Connection=True"
+  }
+}
