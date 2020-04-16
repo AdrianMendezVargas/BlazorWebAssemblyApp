@@ -4,18 +4,7 @@
 
 <h3>Nueva Persona</h3>
 
-<EditForm Model="@persona" OnValidSubmit="@CrearNuevaPersona">
-    <div class="form-text">
-        <label>Nombre:</label>
-        <div>
-            <InputText @bind-Value="@persona.Nombre"/>
-            <ValidationMessage For="@(() => persona.Nombre)" />
-        </div>
-    </div>
-
-    <button type="submit" class="btn btn-success">Crear Persona</button>
-    <DataAnnotationsValidator/>
-</EditForm>
+<FormularioPersona Persona="@persona" TextoBoton="Crear Persona" OnValidSubmit="@CrearNuevaPersona"/>
 
 @code {
     Persona persona = new Persona();

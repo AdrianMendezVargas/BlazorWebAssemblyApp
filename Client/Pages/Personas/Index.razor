@@ -1,5 +1,6 @@
 ﻿@page "/indice-personas"
 @inject HttpClient Http
+@inject IJSRuntime JS
 
 <h3>Personas</h3>
 
@@ -21,14 +22,14 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in personas) {
+            @foreach (var persona in personas) {
                 <tr>
                     <td>
-                        <a class="btn btn-success">Editar</a>
-                        <button class="btn btn-danger">Borrar</button>
+                        <a class="btn btn-success" href="editar-persona/@persona.PersonaId">Editar</a>
+                        <button class="btn btn-danger" @onclick="@(() => BorrarPersona(persona.PersonaId))">Borrar</button>
                     </td>
-                    <td>@item.PersonaId</td>
-                    <td>@item.Nombre</td>
+                    <td>@persona.PersonaId</td>
+                    <td>@persona.Nombre</td>
                 </tr>
             }
         </tbody>
@@ -47,7 +48,22 @@
     async Task CargarPersonas() {
 
         personas = await Http.GetJsonAsync<Persona[]>("personas");
-        
+
+    }
+
+    async Task BorrarPersona(int personaId) {
+
+        var personaSeleccionada = personas.First(p => p.PersonaId == personaId);
+
+        string mensaje = $"Desea eliminar a {personaSeleccionada.Nombre}?";
+
+        if (await JS.InvokeAsync<bool>("confirm", mensaje)) {
+
+            await Http.DeleteAsync($"personas/{personaId}");
+            await CargarPersonas();
+        }
+
+
     }
 
 }

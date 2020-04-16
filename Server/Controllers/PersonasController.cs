@@ -11,11 +11,11 @@ namespace BlazorWebAssemblyApp.Server.Controllers {
 
     [ApiController]
     [Route("[controller]")]
-    public class PersonasController : ControllerBase{
+    public class PersonasController : ControllerBase {
 
         private readonly Contexto contexto;
 
-        
+
         public PersonasController(Contexto contexto) {
             this.contexto = contexto;
         }
@@ -25,7 +25,7 @@ namespace BlazorWebAssemblyApp.Server.Controllers {
             return await contexto.Personas.ToListAsync();
         }
 
-        [HttpGet("{PersonaId}", Name = "obtenerPersona")]
+        [HttpGet("{PersonaId}" , Name = "obtenerPersona")]
         public async Task<ActionResult<Persona>> Get(int PersonaId) {
             return await contexto.Personas.FirstOrDefaultAsync(p => p.PersonaId == PersonaId);
         }
@@ -36,5 +36,24 @@ namespace BlazorWebAssemblyApp.Server.Controllers {
             await contexto.SaveChangesAsync();
             return new CreatedAtRouteResult("obtenerPersona" , new { PersonaId = persona.PersonaId } , persona);
         }
+
+        [HttpPut]
+        public async Task<ActionResult> Put(Persona persona) {
+            contexto.Entry(persona).State = EntityState.Modified;
+            await contexto.SaveChangesAsync();
+            return NoContent();
+
+        }
+
+        [HttpDelete("{PersonaId}")]
+        public async Task<ActionResult> Delete(int PersonaId) {
+
+            Persona persona = new Persona { PersonaId = PersonaId };
+            contexto.Remove(persona);
+            await contexto.SaveChangesAsync();
+            return NoContent();
+
+        }
+
     }
 }

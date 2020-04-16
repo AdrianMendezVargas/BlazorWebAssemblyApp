@@ -1,0 +1,24 @@
+﻿@page "/editar-persona/{PersonaId:int}"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h3>Editar Persona</h3>
+
+<FormularioPersona Persona="@persona" TextoBoton="Guardar Cambios" OnValidSubmit="@GuardarCambios"/>
+
+@code {
+
+    [Parameter]public int PersonaId { get; set; }
+
+    Persona persona = new Persona();
+
+    protected async override Task OnParametersSetAsync() {
+        persona = await Http.GetJsonAsync<Persona>($"personas/{PersonaId}");
+    }
+
+    async Task GuardarCambios() {
+        await Http.PutJsonAsync("personas" , persona);
+        Navigation.NavigateTo("indice-personas");
+    }
+
+}
