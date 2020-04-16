@@ -21,9 +21,20 @@ namespace BlazorWebAssemblyApp.Server.Controllers {
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Persona>>> GetPersonas() {
+        public async Task<ActionResult<List<Persona>>> Get() {
             return await contexto.Personas.ToListAsync();
         }
 
+        [HttpGet("{PersonaId}", Name = "obtenerPersona")]
+        public async Task<ActionResult<Persona>> Get(int PersonaId) {
+            return await contexto.Personas.FirstOrDefaultAsync(p => p.PersonaId == PersonaId);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Post(Persona persona) {
+            contexto.Add(persona);
+            await contexto.SaveChangesAsync();
+            return new CreatedAtRouteResult("obtenerPersona" , new { PersonaId = persona.PersonaId } , persona);
+        }
     }
 }
