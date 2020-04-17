@@ -1,6 +1,10 @@
 ﻿@page "/indice-personas"
 @inject HttpClient Http
 @inject IJSRuntime JS
+@using System.IO
+@using CsvHelper
+@using System.Globalization
+@using BlazorWebAssemblyApp.Client.Helpers
 
 <h3>Personas</h3>
 
@@ -16,25 +20,28 @@
     <table class="table">
         <thead>
             <tr>
-                <th></th>
                 <th>Id</th>
                 <th>Nombre</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
             @foreach (var persona in personas) {
-                <tr>
-                    <td>
-                        <a class="btn btn-success" href="editar-persona/@persona.PersonaId">Editar</a>
-                        <button class="btn btn-danger" @onclick="@(() => BorrarPersona(persona.PersonaId))">Borrar</button>
-                    </td>
-                    <td>@persona.PersonaId</td>
-                    <td>@persona.Nombre</td>
-                </tr>
+            <tr>
+                <td>@persona.PersonaId</td>
+                <td>@persona.Nombre</td>
+                <td>
+                    <a class="btn btn-success" href="editar-persona/@persona.PersonaId">Editar</a>
+                    <button class="btn btn-danger" @onclick="@(() => BorrarPersona(persona.PersonaId))">Borrar</button>
+                </td>
+            </tr>
             }
         </tbody>
 
     </table>
+
+    <button @onclick="ExportarSCV">Exportar a CSV</button>
+    <button @onclick="ExportarExcel">Exportar a Excel</button>
 }
 
 @code {
@@ -53,11 +60,13 @@
 
     async Task BorrarPersona(int personaId) {
 
+        
+
         var personaSeleccionada = personas.First(p => p.PersonaId == personaId);
 
         string mensaje = $"Desea eliminar a {personaSeleccionada.Nombre}?";
 
-        if (await JS.InvokeAsync<bool>("confirm", mensaje)) {
+        if (await JS.InvokeAsync<bool>("confirm" , mensaje)) {
 
             await Http.DeleteAsync($"personas/{personaId}");
             await CargarPersonas();
@@ -65,5 +74,48 @@
 
 
     }
+
+    private void ExportarSCV() {
+
+        using (var memoryStream = new MemoryStream()) {
+
+            using (var writer = new StreamWriter(memoryStream)) {
+
+                using (var csv = new CsvWriter(writer , CultureInfo.CurrentCulture)) {
+                    csv.WriteRecords(personas);
+                }
+
+                var arr = memoryStream.ToArray();
+                JS.GuardarComo("persona.csv" , arr);
+
+            }
+
+        }
+
+    }
+
+    private void ExportarExcel() {
+        using (var package = new ExcelPackage()) {
+            var worksheet = package.Workbook.Worksheets.Add("Personas");
+
+            var tableBody = worksheet.Cells["A1:A1"].LoadFromCollection(
+                from p in personas
+                select new { p.PersonaId , p.Nombre } , true);
+
+            var header = worksheet.Cells["A1:B1"];
+            worksheet.DefaultColWidth = 25;
+            tableBody.Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+            tableBody.Style.Fill.PatternType = ExcelFillStyle.Solid;
+            tableBody.Style.Fill.BackgroundColor.SetColor(Color.WhiteSmoke);
+            tableBody.Style.Border.BorderAround(ExcelBorderStyle.Medium);
+            header.Style.Font.Bold = true;
+            header.Style.Font.Color.SetColor(Color.White);
+            header.Style.Fill.PatternType = ExcelFillStyle.Solid;
+            header.Style.Fill.BackgroundColor.SetColor(Color.DarkBlue);
+
+            JS.GuardarComo("personas.xlsx" , package.GetAsByteArray());
+        }
+    }
+
 
 }
